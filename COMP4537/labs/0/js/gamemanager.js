@@ -46,12 +46,18 @@ export class GameManager {
             // End the game if everything is correct
             if (this.currentIndex == this.btnAmount - Constants.OFFSET) {
                 alert(User.WIN_MESSAGE);
+                this.validOrder.forEach((item) => {
+                    item.btn.disabled = true;
+                });
                 this.endGame();
             }
         }
         else {
             alert(User.LOSE_MESSAGE);
             this.revealAllButtons();
+            this.validOrder.forEach((item) => {
+                item.btn.disabled = true;
+            });
             this.endGame();
         }
     }
