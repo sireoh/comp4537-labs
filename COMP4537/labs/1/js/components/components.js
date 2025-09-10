@@ -18,6 +18,9 @@ class NoteContainer {
         };
         // Update the  local notes with the localStorage notes if exists
         this.notes = data.notes;
+        // Clear existing rows to avoid duplicates on each hydrate
+        this.noteContainerDiv.innerHTML = "";
+        // Render rows from storage
         Object.entries(data.notes).forEach(([key, value]) => {
             this.noteContainerDiv.appendChild(new NoteRow(value, readonly, this.lastStoredSpan, this.notes, key)
                 .noteRowDiv);
@@ -116,8 +119,8 @@ class RemoveButton {
         this.btn.textContent = "Remove";
         this.btn.className = "removeButton";
         this.btn.onclick = () => {
-            this.removeFromDOM(noteId);
             this.removeFromLocalStorage(noteId);
+            this.removeFromDOM(noteId);
         };
     }
     removeFromDOM(id) {
