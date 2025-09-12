@@ -1,21 +1,33 @@
 class NoteContainer {
-    constructor(noteContainerDiv, lastStoredSpanDiv) {
+    constructor(noteContainerDiv, lastStoredSpanDiv, readonly) {
         // Links to the existing container on the DOM
         this.noteContainerDiv = noteContainerDiv;
         // Links to the existing span on the DOM
         this.lastStoredSpan = lastStoredSpanDiv;
+        // Initialize the notes dictionary
+        this.notes = {};
         // Hydrates the container immediately
-        this.hydrateContainer();
+        this.hydrateContainer(readonly);
     }
-    hydrateContainer() {
-        // Hydrates the container with data from the local storage
-        Object.keys(localStorage).forEach((key) => {
-            const value = localStorage.getItem(key);
-            this.noteContainerDiv.appendChild(new NoteRow(value, false, this.lastStoredSpan, key).noteRowDiv);
+    hydrateContainer(readonly) {
+        // Hydrate the lastStored from the localStorage
+        this.lastStoredSpan.textContent = localStorage.getItem("lastStored") || "";
+        // Hydrates the container with notes from the local storage
+        let data = {
+            notes: JSON.parse(localStorage.getItem("notes") || "{}"),
+        };
+        // Update the  local notes with the localStorage notes if exists
+        this.notes = data.notes;
+        // Clear existing rows to avoid duplicates on each hydrate
+        this.noteContainerDiv.innerHTML = "";
+        // Render rows from storage
+        Object.entries(data.notes).forEach(([key, value]) => {
+            this.noteContainerDiv.appendChild(new NoteRow(value, readonly, this.lastStoredSpan, this.notes, key)
+                .noteRowDiv);
         });
     }
     addNoteRow() {
-        this.noteContainerDiv.appendChild(new NoteRow("", false, this.lastStoredSpan).noteRowDiv);
+        this.noteContainerDiv.appendChild(new NoteRow("", false, this.lastStoredSpan, this.notes).noteRowDiv);
     }
     removeRow(id) {
         const rowToRemove = document.getElementById(id);
@@ -23,7 +35,7 @@ class NoteContainer {
     }
 }
 class NoteRow {
-    constructor(text, readOnly, lastStoredSpan, id) {
+    constructor(text, readOnly, lastStoredSpan, notes, id) {
         // Make Row main properties. Creates a new id, if an id doesn't exist
         this.id = id ? id : this.createUUID();
         // Creates the row div
@@ -31,7 +43,7 @@ class NoteRow {
         this.noteRowDiv.className = "noteRow";
         this.noteRowDiv.id = this.id;
         // Creates the NoteText and RemoveButton
-        this.noteText = new NoteText(this.id, text, readOnly, lastStoredSpan);
+        this.noteText = new NoteText(this.id, text, readOnly, lastStoredSpan, notes);
         if (!readOnly)
             this.removeButton = new RemoveButton(this.id);
         // Appends both children
@@ -59,7 +71,7 @@ NoteRow.EIGHT_BITS = 0x8;
 NoteRow.UUID_BASE = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
 NoteRow.X = "x";
 class NoteText {
-    constructor(id, text, readOnly, lastStoredSpanDiv) {
+    constructor(id, text, readOnly, lastStoredSpanDiv, notes) {
         // Stores the id into the class
         this.id = id;
         // Link last stored span
@@ -71,16 +83,30 @@ class NoteText {
         this.textarea.className = "noteText";
         this.textarea.rows = NoteText.MAX_HEIGHT;
         this.textarea.disabled = readOnly;
+        // Last Stored Date Value
+        this.lastStoredValue = "";
         // Writes to local storage onchange
         this.textarea.oninput = () => {
-            this.writeToLocalStorage();
+            this.writeToLocalStorage(notes);
         };
     }
-    writeToLocalStorage() {
-        console.log(`Writing to local storage. ID: ${this.id}, Value: ${this.textarea.value}`);
-        this.lastStoredSpan.innerHTML = new Date().toLocaleString();
+    writeToLocalStorage(notes) {
+        // Date / Time Area
+        this.updateAndStoreTime();
         // Writes to local storage
-        localStorage.setItem(this.id, this.textarea.value);
+        // Update the dictionary
+        notes[this.id] = this.textarea.value;
+        localStorage.setItem("notes", JSON.stringify(notes));
+        // Print client local dictionary
+        console.log(notes);
+    }
+    updateAndStoreTime() {
+        // Update the Value
+        this.lastStoredValue = new Date().toLocaleString();
+        // Update on the DOM using the value
+        this.lastStoredSpan.innerHTML = this.lastStoredValue;
+        // Store on localStorage
+        localStorage.setItem("lastStored", this.lastStoredValue);
     }
 }
 // Magic Numbers
@@ -93,8 +119,8 @@ class RemoveButton {
         this.btn.textContent = "Remove";
         this.btn.className = "removeButton";
         this.btn.onclick = () => {
-            this.removeFromDOM(noteId);
             this.removeFromLocalStorage(noteId);
+            this.removeFromDOM(noteId);
         };
     }
     removeFromDOM(id) {
@@ -103,9 +129,13 @@ class RemoveButton {
         this.rowToRemove.remove();
     }
     removeFromLocalStorage(id) {
+        // Get the notes from local storage
+        const notes = JSON.parse(localStorage.getItem("notes") || "{}");
+        delete notes[id];
         // Remove from local storage
         console.log(`Removing from local storage. ID: ${id}`);
-        localStorage.removeItem(id);
+        // Update localStorage
+        localStorage.setItem("notes", JSON.stringify(notes));
     }
 }
 export { NoteContainer, NoteRow, NoteText, RemoveButton };
