@@ -3,6 +3,9 @@ import { ColouredButton } from "./components/button.js";
 import { GameUtils } from "./helpers/gameutils.js";
 import { Globals } from "./globals.js";
 import { Constants } from "./constants.js";
+import { Index } from "./helpers/index.js";
+// Initializes the game
+Index.init();
 /**
  * Play function starts the main game loop
  * @param n as the numbers of buttons to generate
