@@ -1,2 +1,2 @@
-import { init } from "./utils.js";
-init(true);
+import { Main } from "./main.js";
+Main.init(true);
