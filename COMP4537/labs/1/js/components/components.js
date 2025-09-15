@@ -11,7 +11,8 @@ class NoteContainer {
     }
     hydrateContainer(readonly) {
         // Hydrate the lastStored from the localStorage
-        this.lastStoredSpan.textContent = localStorage.getItem("lastStored") || "";
+        this.lastStoredSpan.textContent =
+            `Last stored at: ${localStorage.getItem("lastStored")}` || "";
         // Hydrates the container with notes from the local storage
         let data = {
             notes: JSON.parse(localStorage.getItem("notes") || "{}"),
@@ -104,7 +105,7 @@ class NoteText {
         // Update the Value
         this.lastStoredValue = new Date().toLocaleString();
         // Update on the DOM using the value
-        this.lastStoredSpan.innerHTML = this.lastStoredValue;
+        this.lastStoredSpan.innerHTML = `Last stored at: ${this.lastStoredValue}`;
         // Store on localStorage
         localStorage.setItem("lastStored", this.lastStoredValue);
     }
