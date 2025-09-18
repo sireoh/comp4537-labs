@@ -9,3 +9,5 @@ User.WRITER_BUTTON = "Writer";
 User.READER_BUTTON = "Reader";
 User.GO_BACK_BUTTON = "Go Back";
 User.ADD_BUTTON = "Add";
+// Date
+User.LAST_STORED_AT_LABEL = "Last stored at:";
